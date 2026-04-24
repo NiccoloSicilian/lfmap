@@ -202,6 +202,12 @@ class FM_T(FM):
         # compute the transformation matrix
         if self.transformation == 'linear':
             self.T = torch.linalg.lstsq(self.X, self.Y[self.Phi_flat]).solution
+        elif self.transformation == 'orthogonal':
+            # Procrustes: min ||X @ T - Y[Phi]||_F  s.t. T.T @ T = I
+            # Solution: T = V @ U.T  where  Y[Phi].T @ X = U @ S @ V.T
+            M = self.Y[self.Phi_flat].T @ self.X
+            U, S, Vh = torch.linalg.svd(M, full_matrices=False)
+            self.T = (Vh.T @ U.T)
         else:
             raise NotImplementedError(f"{self.transformation} transformation not implemented")
 
